@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 #  Phusion Passenger - http://www.modrails.com/
 #  Copyright (c) 2009 Phusion
 #
@@ -21,11 +20,23 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+require 'phusion_passenger/constants'
+require 'phusion_passenger/multicorn/command'
 
-source_root = File.expand_path(File.dirname(__FILE__) << "/..")
-$LOAD_PATH.unshift("#{source_root}/lib")
+module PhusionPassenger
+module Multicorn
 
-require 'rubygems' rescue nil
-require 'phusion_passenger/multicorn/app'
+class VersionCommand < Command
+	def self.show_in_command_list
+		return false
+	end
+	
+	def run
+		puts "Phusion Passenger version #{VERSION_STRING}"
+		puts
+		puts '"Phusion Passenger" is a trademark of Hongli Lai & Ninh Bui.'
+	end
+end
 
-PhusionPassenger::Multicorn::App.run!(ARGV)
+end
+end

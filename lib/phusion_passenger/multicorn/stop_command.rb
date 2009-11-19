@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 #  Phusion Passenger - http://www.modrails.com/
 #  Copyright (c) 2009 Phusion
 #
@@ -21,11 +20,44 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+require 'phusion_passenger/multicorn/command'
 
-source_root = File.expand_path(File.dirname(__FILE__) << "/..")
-$LOAD_PATH.unshift("#{source_root}/lib")
+module PhusionPassenger
+module Multicorn
 
-require 'rubygems' rescue nil
-require 'phusion_passenger/multicorn/app'
+class StopCommand < Command
+	def self.description
+		return "Stop a running Multicorn instance."
+	end
+	
+	def run
+		parse_options!("stop") do |opts|
+			opts.on("--pid-file FILE", String,
+				wrap_desc("PID file of a running Multicorn instance.")) do |value|
+				@options[:pid_file] = value
+			end
+		end
+		
+		determine_various_resource_locations(false)
+		create_nginx_controller
+		begin
+			running = @nginx.running?
+		rescue SystemCallError, IOError
+			running = false
+		end
+		if running
+			@nginx.stop
+		else
+			STDERR.puts "According to the PID file '#{@options[:pid_file]}', " <<
+				"Multicorn doesn't seem to be running."
+			STDERR.puts
+			STDERR.puts "If you know that Multicorn is running then you've " <<
+				"probably specified the wrong PID file. In that case, " <<
+				"please specify the right one with --pid-file."
+			exit 1
+		end
+	end
+end
 
-PhusionPassenger::Multicorn::App.run!(ARGV)
+end
+end
