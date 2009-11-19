@@ -45,6 +45,9 @@ class StartCommand < Command
 	def initialize(args)
 		super(args)
 		@console_mutex = Mutex.new
+		@termination_pipe = IO.pipe
+		@threads = []
+		@interruptable_threads = []
 	end
 	
 	def run
@@ -162,6 +165,7 @@ class StartCommand < Command
 			stop_nginx
 			raise
 		end
+		stop_threads
 	end
 
 private
@@ -335,6 +339,14 @@ private
 		end
 	end
 	
+	# Wait until the termination pipe has closed (a hint for threads to shut down),
+	# or until the timeout has been reached. Returns true if the termination pipe
+	# is closed, false if the timeout has been reached.
+	def wait_on_termination_pipe(timeout)
+		ios = select([@termination_pipe[0]], nil, nil, timeout)
+		return !ios.nil?
+	end
+	
 	def directory_mtimes
 		if @args.empty?
 			dirs = ["."]
@@ -349,8 +361,7 @@ private
 	
 	def watch_directories
 		old_mtimes = directory_mtimes
-		while true
-			sleep 3
+		while !wait_on_termination_pipe(3)
 			new_mtimes = directory_mtimes
 			if old_mtimes != new_mtimes
 				old_mtimes = new_mtimes
@@ -360,14 +371,24 @@ private
 	end
 	
 	def watch_directories_in_background
-		Thread.new do
+		@threads << Thread.new do
 			watch_directories do
 				puts "*** #{Time.now}: redeploying applications ***"
 				determine_apps_to_serve
 				begin
 					pid = @nginx.pid
 				rescue SystemCallError, IOError => e
-					STDERR.puts "*** Error: unable to retrieve the web server's PID (#{e})."
+					# Failing to read the PID file most likely means that the
+					# web server's no longer running, in which case we're supposed
+					# to quit anyway. Only print an error if the web server's still
+					# running.
+					#
+					# We wait at most 6 seconds for the main thread to detect that
+					# Nginx has quit. 6 because on OS X shutting down the Nginx
+					# HelperServer might need 5 seconds (see comment in Watchdog.cpp).
+					if !wait_on_termination_pipe(6)
+						STDERR.puts "*** Error: unable to retrieve the web server's PID (#{e})."
+					end
 					next
 				end
 				create_nginx_config_file
@@ -386,7 +407,7 @@ private
 					
 					# Wait a short period for Nginx to reload its config
 					# before deleting the config file.
-					sleep 3
+					wait_on_termination_pipe(3)
 				ensure
 					File.unlink(@config_filename) rescue nil
 				end
@@ -419,9 +440,11 @@ private
 	
 	def watch_log_files_in_background
 		@apps.each do |app|
-			Thread.new do
+			thread = Thread.new do
 				watch_log_file("#{app[:root]}/log/#{@options[:env]}.log")
 			end
+			@threads << thread
+			@interruptable_threads << thread
 		end
 	end
 	
@@ -448,12 +471,23 @@ private
 	end
 	
 	def stop_nginx
-		@nginx_mutex.synchronize do
+		stop_threads
+		@console_mutex.synchronize do
 			STDOUT.write("Stopping web server...")
 			STDOUT.flush
 			@nginx.stop
 			STDOUT.puts " done"
 			STDOUT.flush
+		end
+	end
+	
+	def stop_threads
+		@termination_pipe[1].close
+		@interruptable_threads.each do |thread|
+			thread.terminate
+		end
+		@threads.each do |thread|
+			thread.join
 		end
 	end
 	
