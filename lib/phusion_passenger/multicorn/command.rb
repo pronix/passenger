@@ -64,6 +64,10 @@ private
 		end
 	end
 	
+	def require_erb
+		require 'erb' unless defined?(ERB)
+	end
+	
 	def debugging?
 		return ENV['MULTICORN_DEBUG']
 	end
@@ -126,12 +130,13 @@ private
 		File.open(@config_filename, 'w') do |f|
 			f.chmod(0644)
 			template_filename = File.join(TEMPLATES_DIR, "multicorn", "config.erb")
+			require_erb
 			erb = ERB.new(File.read(template_filename))
 			
 			if debugging?
 				passenger_root = SOURCE_ROOT
 			else
-				passenger_root = @multicorn_dir
+				passenger_root = passenger_support_files_dir
 			end
 			# The template requires some helper methods which are defined in start_command.rb.
 			output = erb.result(binding)
@@ -141,7 +146,7 @@ private
 	end
 	
 	def determine_nginx_start_command
-		return "#{@nginx_dir}/sbin/nginx -c '#{@config_filename}'"
+		return "#{nginx_dir}/sbin/nginx -c '#{@config_filename}'"
 	end
 	
 	def ping_nginx

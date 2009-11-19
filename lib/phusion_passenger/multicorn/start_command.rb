@@ -77,6 +77,10 @@ class StartCommand < Command
 				wrap_desc("User to run as. Ignored unless running as root.")) do |value|
 				@options[:user] = value
 			end
+			opts.on("--nginx-version VERSION", String,
+				wrap_desc("Nginx version to use as core (default: #{@options[:nginx_version]})")) do |value|
+				@options[:nginx_version] = value
+			end
 		end
 		if @options[:tcp_explicitly_given] && @options[:socket_file]
 			STDERR.puts "You cannot specify both --address/--port and --socket. Please choose either one."
@@ -196,6 +200,7 @@ private
 		end
 	end
 	
+	# Returns the URL that Nginx will be listening on.
 	def listen_url
 		if @options[:socket_file]
 			return @options[:socket_file]
@@ -209,31 +214,49 @@ private
 		end
 	end
 	
-	def install_runtime(multicorn_dir, nginx_dir, version)
+	def install_runtime
 		require 'phusion_passenger/multicorn/runtime_installer'
-		RuntimeInstaller.new(:multicorn_dir => multicorn_dir,
+		installer = RuntimeInstaller.new(
+			:support_dir => passenger_support_files_dir,
 			:nginx_dir => nginx_dir,
-			:version => version).start
+			:version => @options[:nginx_version])
+		installer.start
+	end
+	
+	def runtime_version_string
+		if defined?(RUBY_ENGINE)
+			ruby_engine = RUBY_ENGINE
+		else
+			ruby_engine = "ruby"
+		end
+		architecture = `uname -m`.strip
+		return "#{VERSION_STRING}-#{ruby_engine}#{RUBY_VERSION}-#{architecture}"
+	end
+	
+	def passenger_support_files_dir
+		return "#{@runtime_dir}/support"
+	end
+	
+	def nginx_dir
+		return "#{@runtime_dir}/nginx-#{@options[:nginx_version]}"
 	end
 	
 	def ensure_nginx_installed
 		home           = Etc.getpwuid.dir
-		nginx_version  = @options[:nginx_version]
-		@multicorn_dir = "/var/lib/multicorn/#{VERSION_STRING}"
-		@nginx_dir     = "#{@multicorn_dir}/nginx-#{nginx_version}"
-		if !File.exist?("#{@nginx_dir}/sbin/nginx")
+		@runtime_dir   = "/var/lib/multicorn/#{runtime_version_string}"
+		if !File.exist?("#{nginx_dir}/sbin/nginx")
 			if Process.euid == 0
-				install_runtime(@multicorn_dir, @nginx_dir, nginx_version)
+				install_runtime
 			else
-				@multicorn_dir = "#{home}/.multicorn/#{VERSION_STRING}"
-				@nginx_dir     = "#{@multicorn_dir}/nginx-#{nginx_version}"
-				if !File.exist?("#{@nginx_dir}/sbin/nginx")
-					install_runtime(@multicorn_dir, @nginx_dir, nginx_version)
+				@runtime_dir = "#{home}/.multicorn/#{runtime_version_string}"
+				if !File.exist?("#{nginx_dir}/sbin/nginx")
+					install_runtime
 				end
 			end
 		end
 		
-		@temp_dir = "#{home}/.multicorn/#{VERSION_STRING}/nginx-#{nginx_version}/temp"
+		nginx_version = @options[:nginx_version]
+		@temp_dir = "#{home}/.multicorn/#{runtime_version_string}/nginx-#{nginx_version}/temp"
 		ensure_directory_exists(@temp_dir)
 	end
 	
@@ -343,8 +366,8 @@ private
 				determine_apps_to_serve
 				begin
 					pid = @nginx.pid
-				rescue SystemCallError, IOError
-					STDERR.puts "*** Error: unable to retrieve the web server's PID."
+				rescue SystemCallError, IOError => e
+					STDERR.puts "*** Error: unable to retrieve the web server's PID (#{e})."
 					next
 				end
 				create_nginx_config_file

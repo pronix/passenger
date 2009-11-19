@@ -23,6 +23,7 @@
 require 'fileutils'
 require 'phusion_passenger/abstract_installer'
 require 'phusion_passenger/dependencies'
+require 'phusion_passenger/packaging'
 require 'phusion_passenger/platform_info'
 
 module PhusionPassenger
@@ -38,12 +39,18 @@ class RuntimeInstaller < AbstractInstaller
 			Dependencies::Ruby_OpenSSL,
 			Dependencies::RubyGems,
 			Dependencies::Rake,
-			Dependencies::Zlib_Dev
+			Dependencies::Zlib_Dev,
+			Dependencies::File_Tail,
+			Dependencies::Daemon_Controller,
 		]
 		if Dependencies.fastthread_required?
 			result << Dependencies::FastThread
 		end
 		return result
+	end
+	
+	def users_guide
+		return "#{DOCDIR}/Users guide Multicorn.html"
 	end
 	
 	def install!
@@ -230,28 +237,23 @@ private
 	end
 	
 	def compile_passenger_support_files
-		myself = `whoami`.strip
 		rake = "#{PlatformInfo::RUBY} #{PlatformInfo.rake}"
 		
-		# Copy Phusion Passenger sources to designated directory.
-		yield(0, 1, 1, "Preparing Phusion Passenger...")
-		FileUtils.rm_rf(@multicorn_dir)
-		Dir.chdir(PASSENGER_ROOT) do
-			files = `#{rake} package:filelist --silent`.split("\n")
-			copy_files(files, @multicorn_dir) do |progress, total|
-				yield(progress, total, 1, "Copying files...")
+		# Copy Phusion Passenger sources to designated directory if necessary.
+		if !File.exist?("#{@support_dir}/Rakefile")
+			yield(0, 1, 1, "Preparing Phusion Passenger...")
+			FileUtils.rm_rf(@support_dir)
+			Dir.chdir(SOURCE_ROOT) do
+				files = `#{rake} package:filelist --silent`.split("\n")
+				copy_files(files, @support_dir) do |progress, total|
+					yield(progress, total, 1, "Copying files...")
+				end
 			end
 		end
 		
 		# Then compile it.
 		yield(0, 1, 2, "Preparing Phusion Passenger...")
-		Dir.chdir(@multicorn_dir) do
-			clean_command = "#{rake} nginx:clean --silent REALLY_QUIET=1"
-			if !system(clean_command)
-				STDERR.puts
-				STDERR.puts "*** Command failed: #{clean_command}"
-				exit 1
-			end
+		Dir.chdir(@support_dir) do
 			run_rake_task!("nginx") do |progress, total|
 				yield(progress, total, 2, "Compiling Phusion Passenger...")
 			end
@@ -260,10 +262,10 @@ private
 	
 	def install_nginx(source_dir)
 		Dir.chdir(source_dir) do
-			command = "./configure '--prefix=#{@nginx_dir}' --without-pcre " <<
+			command = "sh ./configure '--prefix=#{@nginx_dir}' --without-pcre " <<
 				"--without-http_rewrite_module " <<
 				"--without-http_fastcgi_module " <<
-				"'--add-module=#{@multicorn_dir}/ext/nginx'"
+				"'--add-module=#{@support_dir}/ext/nginx'"
 			run_command_with_throbber(command, "Preparing Nginx...") do |status_text|
 				yield(0, 1, status_text)
 			end
