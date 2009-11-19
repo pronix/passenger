@@ -24,6 +24,7 @@ require 'socket'
 require 'thread'
 require 'etc'
 require 'phusion_passenger/constants'
+require 'phusion_passenger/platform_info'
 require 'phusion_passenger/multicorn/command'
 
 module PhusionPassenger
