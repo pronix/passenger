@@ -24,7 +24,7 @@ require 'optparse'
 require 'phusion_passenger/packaging'
 
 module PhusionPassenger
-module Multicorn
+module Lite
 
 class Command
 	def self.show_in_command_list
@@ -69,13 +69,13 @@ private
 	end
 	
 	def debugging?
-		return ENV['MULTICORN_DEBUG']
+		return ENV['PASSENGER_DEBUG']
 	end
 	
 	def parse_options!(command_name, description = nil)
 		help = false
 		parser = OptionParser.new do |opts|
-			opts.banner = "Usage: multicorn #{command_name} [options]"
+			opts.banner = "Usage: passenger #{command_name} [options]"
 			opts.separator description if description
 			opts.separator " "
 			opts.separator "Options:"
@@ -110,26 +110,26 @@ private
 	def determine_various_resource_locations(create_subdirs = true)
 		if @args.empty?
 			if looks_like_app_directory?(".")
-				@options[:pid_file] ||= File.expand_path("tmp/pids/multicorn.pid")
-				@options[:log_file] ||= File.expand_path("log/multicorn.log")
+				@options[:pid_file] ||= File.expand_path("tmp/pids/passenger.pid")
+				@options[:log_file] ||= File.expand_path("log/passenger.log")
 				if create_subdirs
 					ensure_directory_exists(File.dirname(@options[:pid_file]))
 					ensure_directory_exists(File.dirname(@options[:log_file]))
 				end
 			else
-				@options[:pid_file] ||= File.expand_path("multicorn.pid")
-				@options[:log_file] ||= File.expand_path("multicorn.log")
+				@options[:pid_file] ||= File.expand_path("passenger.pid")
+				@options[:log_file] ||= File.expand_path("passenger.log")
 			end
 		else
-			@options[:pid_file] ||= File.expand_path(File.join(@args[0], "multicorn.pid"))
-			@options[:log_file] ||= File.expand_path(File.join(@args[0], "multicorn.log"))
+			@options[:pid_file] ||= File.expand_path(File.join(@args[0], "passenger.pid"))
+			@options[:log_file] ||= File.expand_path(File.join(@args[0], "passenger.log"))
 		end
 	end
 	
 	def create_nginx_config_file
 		File.open(@config_filename, 'w') do |f|
 			f.chmod(0644)
-			template_filename = File.join(TEMPLATES_DIR, "multicorn", "config.erb")
+			template_filename = File.join(TEMPLATES_DIR, "lite", "config.erb")
 			require_erb
 			erb = ERB.new(File.read(template_filename))
 			
@@ -160,7 +160,7 @@ private
 	
 	def create_nginx_controller
 		require_daemon_controller
-		@config_filename = "/tmp/multicorn.#{$$}.conf"
+		@config_filename = "/tmp/passenger-lite.#{$$}.conf"
 		@nginx = DaemonController.new(
 			:identifier    => 'Nginx',
 			:before_start  => method(:create_nginx_config_file),

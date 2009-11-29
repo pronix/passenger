@@ -20,20 +20,20 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-require 'phusion_passenger/multicorn/command'
+require 'phusion_passenger/lite/command'
 
 module PhusionPassenger
-module Multicorn
+module Lite
 
 class StatusCommand < Command
 	def self.description
-		return "Show the status of a running Multicorn instance."
+		return "Show the status of a running Passenger Lite instance."
 	end
 	
 	def run
 		parse_options!("status") do |opts|
 			opts.on("--pid-file FILE", String,
-				wrap_desc("PID file of a running Multicorn instance.")) do |value|
+				wrap_desc("PID file of a running Phusion Passenger Lite instance.")) do |value|
 				@options[:pid_file] = value
 			end
 		end
@@ -47,9 +47,9 @@ class StatusCommand < Command
 			running = false
 		end
 		if running
-			puts "Multicorn is running on PID #{pid}."
+			puts "Phusion Passenger Lite is running on PID #{pid}."
 		else
-			puts "Multicorn is not running."
+			puts "Phusion Passenger Lite is not running."
 		end
 	end
 end

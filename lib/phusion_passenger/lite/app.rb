@@ -21,10 +21,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 require 'optparse'
-require 'phusion_passenger/multicorn/command'
+require 'phusion_passenger/lite/command'
 
 module PhusionPassenger
-module Multicorn
+module Lite
 
 class App
 	COMMANDS = [
@@ -42,8 +42,8 @@ class App
 	def self.each_command
 		COMMANDS.each do |command_spec|
 			command_name = command_spec[0]
-			require "phusion_passenger/multicorn/#{command_name}_command"
-			command_class = Multicorn.const_get(command_spec[1])
+			require "phusion_passenger/lite/#{command_name}_command"
+			command_class = Lite.const_get(command_spec[1])
 			yield(command_name, command_class)
 		end
 	end
@@ -88,5 +88,5 @@ private
 	end
 end
 
-end # module Multicorn
+end # module Lite
 end # module PhusionPassenger

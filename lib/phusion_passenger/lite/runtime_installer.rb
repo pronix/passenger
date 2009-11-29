@@ -27,7 +27,7 @@ require 'phusion_passenger/packaging'
 require 'phusion_passenger/platform_info'
 
 module PhusionPassenger
-module Multicorn
+module Lite
 
 class RuntimeInstaller < AbstractInstaller
 	def dependencies
@@ -50,7 +50,7 @@ class RuntimeInstaller < AbstractInstaller
 	end
 	
 	def users_guide
-		return "#{DOCDIR}/Users guide Multicorn.html"
+		return "#{DOCDIR}/Users guide Lite.html"
 	end
 	
 	def install!
@@ -84,7 +84,7 @@ class RuntimeInstaller < AbstractInstaller
 
 private
 	def show_welcome_screen
-		render_template 'multicorn/welcome',
+		render_template 'lite/welcome',
 			:version => @version,
 			:dir => @nginx_dir
 		puts
@@ -97,9 +97,9 @@ private
 	rescue
 		new_screen
 		if Process.uid == 0
-			render_template 'multicorn/cannot_write_to_dir', :dir => dir
+			render_template 'lite/cannot_write_to_dir', :dir => dir
 		else
-			render_template 'multicorn/run_installer_as_root', :dir => dir
+			render_template 'lite/run_installer_as_root', :dir => dir
 		end
 		return false
 	ensure
@@ -174,7 +174,7 @@ private
 	
 	def show_possible_solutions_for_download_and_extraction_problems
 		new_screen
-		render_template "multicorn/possible_solutions_for_download_and_extraction_problems"
+		render_template "lite/possible_solutions_for_download_and_extraction_problems"
 		puts
 	end
 	
@@ -296,5 +296,5 @@ private
 	end
 end
 
-end # module Multicorn
+end # module Lite
 end # module PhusionPassenger

@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 #  Phusion Passenger - http://www.modrails.com/
 #  Copyright (c) 2009 Phusion
 #
@@ -21,11 +20,36 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+require 'phusion_passenger/lite/command'
 
-source_root = File.expand_path(File.dirname(__FILE__) << "/..")
-$LOAD_PATH.unshift("#{source_root}/lib")
+module PhusionPassenger
+module Lite
 
-require 'rubygems' rescue nil
-require 'phusion_passenger/multicorn/app'
+class HelpCommand < Command
+	def self.show_in_command_list
+		return false
+	end
+	
+	def run
+		puts "Phusion Passenger Lite, the easiest way to deploy Ruby web apps."
+		puts
+		puts "Available commands:"
+		puts
+		Lite::App.each_command do |command_name, command_class|
+			if command_class.show_in_command_list
+				printf "  passenger %-10s  %s\n", command_name, command_class.description
+			end
+		end
+		puts
+		puts "Special options:"
+		puts
+		puts "  passenger --help      Display this help message."
+		puts "  passenger --version   Display version number."
+		puts
+		puts "For more information about a specific command, please type"
+		puts "'passenger <COMMAND> --help', e.g. 'passenger start --help'."
+	end
+end
 
-PhusionPassenger::Multicorn::App.run!(ARGV)
+end
+end

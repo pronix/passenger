@@ -25,10 +25,10 @@ require 'thread'
 require 'etc'
 require 'phusion_passenger/constants'
 require 'phusion_passenger/platform_info'
-require 'phusion_passenger/multicorn/command'
+require 'phusion_passenger/lite/command'
 
 module PhusionPassenger
-module Multicorn
+module Lite
 
 class StartCommand < Command
 	DEFAULT_OPTIONS = {
@@ -39,7 +39,7 @@ class StartCommand < Command
 	}.freeze
 	
 	def self.description
-		return "Start Multicorn."
+		return "Start Phusion Passenger Lite."
 	end
 	
 	def initialize(args)
@@ -52,7 +52,7 @@ class StartCommand < Command
 	
 	def run
 		@options = DEFAULT_OPTIONS.dup
-		description = "Starts Multicorn in order to serve a Ruby web application."
+		description = "Starts Phusion Passenger Lite and serve one or more Ruby web applications."
 		parse_options!("start [directory]", description) do |opts|
 			opts.on("-a", "--address HOST", String,
 				wrap_desc("Bind to HOST address (default: #{@options[:address]})")) do |value|
@@ -106,20 +106,20 @@ class StartCommand < Command
 				pid = nil
 			end
 			if pid
-				STDERR.puts "*** ERROR: Multicorn is already running on PID #{pid}."
+				STDERR.puts "*** ERROR: Phusion Passenger Lite is already running on PID #{pid}."
 			else
-				STDERR.puts "*** ERROR: Multicorn is already running."
+				STDERR.puts "*** ERROR: Phusion Passenger Lite is already running."
 			end
 			exit 1
 		rescue DaemonController::StartError => e
-			STDERR.puts "*** ERROR: could not start Multicorn Nginx core:"
+			STDERR.puts "*** ERROR: could not start Passenger Nginx core:"
 			STDERR.puts e
 			exit 1
 		ensure
 			File.unlink(@config_filename) rescue nil
 		end
 		
-		puts "=============== Multicorn web server started ==============="
+		puts "=============== Phusion Passenger Lite web server started ==============="
 		puts "PID file: #{@options[:pid_file]}"
 		puts "Log file: #{@options[:log_file]}"
 		if @apps.size > 1
@@ -141,9 +141,9 @@ class StartCommand < Command
 		if @options[:daemonize]
 			puts "Serving in the background as a daemon."
 		else
-			puts "You can stop Multicorn by pressing Ctrl-C."
+			puts "You can stop Phusion Passenger Lite by pressing Ctrl-C."
 		end
-		puts "============================================================"
+		puts "========================================================================="
 		
 		daemonize if @options[:daemonize]
 		Thread.abort_on_exception = true
@@ -184,21 +184,21 @@ private
 	
 	# Most platforms don't allow non-root processes to bind to a port lower than 1024.
 	# Check whether this is the case for the current platform and if so, tell the user
-	# that it must re-run Multicorn with sudo.
+	# that it must re-run Phusion Passenger Lite with sudo.
 	def check_port_and_display_sudo_suggestion
 		if !@options[:socket_file] && @options[:port] < 1024 && Process.euid != 0
 			begin
 				TCPServer.new('127.0.0.1', @options[:port]).close
 			rescue Errno::EACCES
 				myself = `whoami`.strip
-				STDERR.puts "Only the 'root' user can run Multicorn on port #{@options[:port]}. You are currently running"
-				STDERR.puts "as '#{myself}'. Please re-run Multicorn with root privileges with the"
-				STDERR.puts "following command:"
+				STDERR.puts "Only the 'root' user can run Phusion Passenger Lite on port #{@options[:port]}. You are"
+				STDERR.puts "currently running as '#{myself}'. Please re-run Lite with root privileges with"
+				STDERR.puts "the following command:"
 				STDERR.puts
-				STDERR.puts "  sudo multicorn start #{@original_args.join(' ')} --user=#{myself}"
+				STDERR.puts "  sudo passenger start #{@original_args.join(' ')} --user=#{myself}"
 				STDERR.puts
-				STDERR.puts "Don't forget the '--user' part! That will make Multicorn drop root privileges"
-				STDERR.puts "and switch to '#{myself}' after it has obtained port #{@options[:port]}."
+				STDERR.puts "Don't forget the '--user' part! That will make Phusion Passenger Lite drop root"
+				STDERR.puts "privileges and switch to '#{myself}' after it has obtained port #{@options[:port]}."
 				exit 1
 			end
 		end
@@ -219,7 +219,7 @@ private
 	end
 	
 	def install_runtime
-		require 'phusion_passenger/multicorn/runtime_installer'
+		require 'phusion_passenger/lite/runtime_installer'
 		installer = RuntimeInstaller.new(
 			:support_dir => passenger_support_files_dir,
 			:nginx_dir => nginx_dir,
@@ -246,12 +246,12 @@ private
 	
 	def ensure_nginx_installed
 		home           = Etc.getpwuid.dir
-		@runtime_dir   = "/var/lib/multicorn/#{runtime_version_string}"
+		@runtime_dir   = "/var/lib/passenger-lite/#{runtime_version_string}"
 		if !File.exist?("#{nginx_dir}/sbin/nginx")
 			if Process.euid == 0
 				install_runtime
 			else
-				@runtime_dir = "#{home}/.multicorn/#{runtime_version_string}"
+				@runtime_dir = "#{home}/.passenger-lite/#{runtime_version_string}"
 				if !File.exist?("#{nginx_dir}/sbin/nginx")
 					install_runtime
 				end
@@ -259,7 +259,7 @@ private
 		end
 		
 		nginx_version = @options[:nginx_version]
-		@temp_dir = "#{home}/.multicorn/#{runtime_version_string}/nginx-#{nginx_version}/temp"
+		@temp_dir = "#{home}/.passenger-lite/#{runtime_version_string}/nginx-#{nginx_version}/temp"
 		ensure_directory_exists(@temp_dir)
 	end
 	

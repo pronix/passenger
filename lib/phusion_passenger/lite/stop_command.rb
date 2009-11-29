@@ -20,21 +20,42 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-require 'phusion_passenger/constants'
-require 'phusion_passenger/multicorn/command'
+require 'phusion_passenger/lite/command'
 
 module PhusionPassenger
-module Multicorn
+module Lite
 
-class VersionCommand < Command
-	def self.show_in_command_list
-		return false
+class StopCommand < Command
+	def self.description
+		return "Stop a running Phusion Passenger Lite instance."
 	end
 	
 	def run
-		puts "Phusion Passenger version #{VERSION_STRING}"
-		puts
-		puts '"Phusion Passenger" is a trademark of Hongli Lai & Ninh Bui.'
+		parse_options!("stop") do |opts|
+			opts.on("--pid-file FILE", String,
+				wrap_desc("PID file of a running Phusion Passenger Lite instance.")) do |value|
+				@options[:pid_file] = value
+			end
+		end
+		
+		determine_various_resource_locations(false)
+		create_nginx_controller
+		begin
+			running = @nginx.running?
+		rescue SystemCallError, IOError
+			running = false
+		end
+		if running
+			@nginx.stop
+		else
+			STDERR.puts "According to the PID file '#{@options[:pid_file]}', " <<
+				"Phusion Passenger Lite doesn't seem to be running."
+			STDERR.puts
+			STDERR.puts "If you know that Phusion Passenger Lite is running then you've " <<
+				"probably specified the wrong PID file. In that case, " <<
+				"please specify the right one with --pid-file."
+			exit 1
+		end
 	end
 end
 
