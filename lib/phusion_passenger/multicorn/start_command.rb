@@ -233,8 +233,7 @@ private
 		else
 			ruby_engine = "ruby"
 		end
-		architecture = `uname -m`.strip
-		return "#{VERSION_STRING}-#{ruby_engine}#{RUBY_VERSION}-#{architecture}"
+		return "#{VERSION_STRING}-#{ruby_engine}#{RUBY_VERSION}-#{RUBY_PLATFORM}"
 	end
 	
 	def passenger_support_files_dir
