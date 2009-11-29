@@ -122,6 +122,7 @@ class StartCommand < Command
 		puts "=============== Phusion Passenger Lite web server started ==============="
 		puts "PID file: #{@options[:pid_file]}"
 		puts "Log file: #{@options[:log_file]}"
+		puts "Environment: #{@options[:env]}"
 		if @apps.size > 1
 			puts
 			if @options[:socket_file]
