@@ -138,9 +138,16 @@ private
 		FileUtils.rm_rf(original_output_dir)
 		FileUtils.rm_rf(output_dir)
 		
-		if !download("http://sysoev.ru/nginx/nginx-#{@version}.tar.gz", "/tmp/#{basename}")
-			return nil
+		if @tarball
+			if !sh("cp", @tarball, "/tmp/#{basename}")
+				return nil
+			end
+		else
+			if !download("http://sysoev.ru/nginx/nginx-#{@version}.tar.gz", "/tmp/#{basename}")
+				return nil
+			end
 		end
+		
 		Dir.chdir("/tmp") do
 			color_puts "<banner>Installing Nginx core...</banner>"
 			File.open(basename) do |f|

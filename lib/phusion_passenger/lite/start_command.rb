@@ -84,6 +84,11 @@ class StartCommand < Command
 				wrap_desc("Nginx version to use as core (default: #{@options[:nginx_version]})")) do |value|
 				@options[:nginx_version] = value
 			end
+			opts.on("--nginx-tarball FILENAME", String,
+				wrap_desc("If Nginx needs to be installed, then the given tarball will " +
+				          "be used instead of downloading from the Internet")) do |value|
+				@options[:nginx_tarball] = value
+			end
 		end
 		if @options[:tcp_explicitly_given] && @options[:socket_file]
 			STDERR.puts "You cannot specify both --address/--port and --socket. Please choose either one."
@@ -224,7 +229,8 @@ private
 		installer = RuntimeInstaller.new(
 			:support_dir => passenger_support_files_dir,
 			:nginx_dir => nginx_dir,
-			:version => @options[:nginx_version])
+			:version => @options[:nginx_version],
+			:tarball => @options[:nginx_tarball])
 		installer.start
 	end
 	
