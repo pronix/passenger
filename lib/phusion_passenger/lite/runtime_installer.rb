@@ -39,6 +39,7 @@ class RuntimeInstaller < AbstractInstaller
 			Dependencies::Ruby_OpenSSL,
 			Dependencies::RubyGems,
 			Dependencies::Rake,
+			Dependencies::OpenSSL_Dev,
 			Dependencies::Zlib_Dev,
 			Dependencies::File_Tail,
 			Dependencies::Daemon_Controller,
