@@ -27,6 +27,13 @@ module PhusionPassenger
 module Lite
 
 class Command
+	DEFAULT_OPTIONS = {
+		:address       => '0.0.0.0',
+		:port          => 3000,
+		:env           => ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development',
+		:nginx_version => '0.7.64'
+	}.freeze
+	
 	def self.show_in_command_list
 		return true
 	end
@@ -38,7 +45,7 @@ class Command
 	def initialize(args)
 		@args = args.dup
 		@original_args = args.dup
-		@options = {}
+		@options = DEFAULT_OPTIONS.dup
 	end
 
 private
@@ -108,21 +115,28 @@ private
 	end
 	
 	def determine_various_resource_locations(create_subdirs = true)
+		if @options[:socket_file]
+			pid_basename = "passenger.pid"
+			log_basename = "passenger.log"
+		else
+			pid_basename = "passenger.#{@options[:port]}.pid"
+			log_basename = "passenger.#{@options[:port]}.log"
+		end
 		if @args.empty?
 			if looks_like_app_directory?(".")
-				@options[:pid_file] ||= File.expand_path("tmp/pids/passenger.pid")
-				@options[:log_file] ||= File.expand_path("log/passenger.log")
+				@options[:pid_file] ||= File.expand_path("tmp/pids/#{pid_basename}")
+				@options[:log_file] ||= File.expand_path("log/#{log_basename}")
 				if create_subdirs
 					ensure_directory_exists(File.dirname(@options[:pid_file]))
 					ensure_directory_exists(File.dirname(@options[:log_file]))
 				end
 			else
-				@options[:pid_file] ||= File.expand_path("passenger.pid")
-				@options[:log_file] ||= File.expand_path("passenger.log")
+				@options[:pid_file] ||= File.expand_path(pid_basename)
+				@options[:log_file] ||= File.expand_path(log_basename)
 			end
 		else
-			@options[:pid_file] ||= File.expand_path(File.join(@args[0], "passenger.pid"))
-			@options[:log_file] ||= File.expand_path(File.join(@args[0], "passenger.log"))
+			@options[:pid_file] ||= File.expand_path(File.join(@args[0], pid_basename))
+			@options[:log_file] ||= File.expand_path(File.join(@args[0], log_basename))
 		end
 	end
 	

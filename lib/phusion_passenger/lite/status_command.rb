@@ -32,6 +32,10 @@ class StatusCommand < Command
 	
 	def run
 		parse_options!("status") do |opts|
+			opts.on("-p", "--port NUMBER", Integer,
+				wrap_desc("The port number of a Phusion Passenger lite instance (default: #{@options[:port]})")) do |value|
+				@options[:port] = value
+			end
 			opts.on("--pid-file FILE", String,
 				wrap_desc("PID file of a running Phusion Passenger Lite instance.")) do |value|
 				@options[:pid_file] = value
@@ -47,9 +51,9 @@ class StatusCommand < Command
 			running = false
 		end
 		if running
-			puts "Phusion Passenger Lite is running on PID #{pid}."
+			puts "Phusion Passenger Lite is running on PID #{pid}, according to PID file #{@options[:pid_file]}"
 		else
-			puts "Phusion Passenger Lite is not running."
+			puts "Phusion Passenger Lite is not running, according to PID file #{@options[:pid_file]}"
 		end
 	end
 end

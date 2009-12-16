@@ -32,6 +32,10 @@ class StopCommand < Command
 	
 	def run
 		parse_options!("stop") do |opts|
+			opts.on("-p", "--port NUMBER", Integer,
+				wrap_desc("The port number of a Phusion Passenger lite instance (default: #{@options[:port]})")) do |value|
+				@options[:port] = value
+			end
 			opts.on("--pid-file FILE", String,
 				wrap_desc("PID file of a running Phusion Passenger Lite instance.")) do |value|
 				@options[:pid_file] = value
@@ -51,9 +55,16 @@ class StopCommand < Command
 			STDERR.puts "According to the PID file '#{@options[:pid_file]}', " <<
 				"Phusion Passenger Lite doesn't seem to be running."
 			STDERR.puts
-			STDERR.puts "If you know that Phusion Passenger Lite is running then you've " <<
-				"probably specified the wrong PID file. In that case, " <<
-				"please specify the right one with --pid-file."
+			STDERR.puts "If you know that Phusion Passenger Lite *is* running then one of these might be"
+			STDERR.puts "the reason:"
+			STDERR.puts
+			STDERR.puts " * The Phusion Passenger Lite instance that you want to stop isn't running on"
+			STDERR.puts "   port #{@options[:port]}, but on another port. If this is the case then you should"
+			STDERR.puts "   specify the right port with --port."
+			STDERR.puts "   If the instance is listening on a Unix socket file instead of a TCP port,"
+			STDERR.puts "   then please specify the PID file's filename with --pid-file."
+			STDERR.puts " * The instance that you want to stop has stored its PID file in a non-standard"
+			STDERR.puts "   location. In this case please specify the right PID file with --pid-file."
 			exit 1
 		end
 	end

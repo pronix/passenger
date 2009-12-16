@@ -31,13 +31,6 @@ module PhusionPassenger
 module Lite
 
 class StartCommand < Command
-	DEFAULT_OPTIONS = {
-		:address       => '0.0.0.0',
-		:port          => 3000,
-		:env           => ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development',
-		:nginx_version => '0.7.64'
-	}.freeze
-	
 	def self.description
 		return "Start Phusion Passenger Lite."
 	end
@@ -51,7 +44,6 @@ class StartCommand < Command
 	end
 	
 	def run
-		@options = DEFAULT_OPTIONS.dup
 		description = "Starts Phusion Passenger Lite and serve one or more Ruby web applications."
 		parse_options!("start [directory]", description) do |opts|
 			opts.on("-a", "--address HOST", String,
