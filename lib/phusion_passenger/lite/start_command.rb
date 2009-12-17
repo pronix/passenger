@@ -60,6 +60,8 @@ class StartCommand < Command
 				wrap_desc("Bind to Unix domain socket instead of TCP socket")) do |value|
 				@options[:socket_file] = value
 			end
+			
+			opts.separator ""
 			opts.on("-e", "--environment ENV", String,
 				wrap_desc("Framework environment (default: #{@options[:env]})")) do |value|
 				@options[:port] = value
@@ -72,6 +74,8 @@ class StartCommand < Command
 				wrap_desc("Minimum number of processes per application (default: #{@options[:min_instances]})")) do |value|
 				@options[:min_instances] = value
 			end
+			
+			opts.separator ""
 			opts.on("-d", "--daemonize",
 				wrap_desc("Daemonize into the background")) do
 				@options[:daemonize] = true
@@ -79,6 +83,14 @@ class StartCommand < Command
 			opts.on("--user USERNAME", String,
 				wrap_desc("User to run as. Ignored unless running as root.")) do |value|
 				@options[:user] = value
+			end
+			opts.on("--log-file FILENAME", String,
+				wrap_desc("Where to write log messages (default: console, or /dev/null when daemonized)")) do |value|
+				@options[:log_file] = value
+			end
+			opts.on("--pid-file FILENAME", String,
+				wrap_desc("Where to store the PID file")) do |value|
+				@options[:pid_file] = value
 			end
 			opts.on("--nginx-version VERSION", String,
 				wrap_desc("Nginx version to use as core (default: #{@options[:nginx_version]})")) do |value|
