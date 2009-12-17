@@ -219,10 +219,11 @@ private
 	def install_runtime
 		require 'phusion_passenger/lite/runtime_installer'
 		installer = RuntimeInstaller.new(
+			:source_root => SOURCE_ROOT,
 			:support_dir => passenger_support_files_dir,
-			:nginx_dir => nginx_dir,
-			:version => @options[:nginx_version],
-			:tarball => @options[:nginx_tarball])
+			:nginx_dir   => nginx_dir,
+			:version     => @options[:nginx_version],
+			:tarball     => @options[:nginx_tarball])
 		installer.start
 	end
 	

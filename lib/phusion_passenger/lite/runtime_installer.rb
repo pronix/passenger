@@ -61,10 +61,10 @@ class RuntimeInstaller < AbstractInstaller
 		puts
 		check_whether_we_can_write_to(@nginx_dir) || exit(1)
 		
-		source_dir = download_and_extract_nginx do |progress, total|
+		nginx_source_dir = download_and_extract_nginx do |progress, total|
 			show_progress(progress, total, 1, 7, "Extracting...")
 		end
-		if source_dir.nil?
+		if nginx_source_dir.nil?
 			puts
 			show_possible_solutions_for_download_and_extraction_problems
 			exit(1)
@@ -76,7 +76,7 @@ class RuntimeInstaller < AbstractInstaller
 				show_progress(progress, total, 3..5, 7, status_text)
 			end
 		end
-		install_nginx(source_dir) do |progress, total, status_text|
+		install_nginx(nginx_source_dir) do |progress, total, status_text|
 			show_progress(progress, total, 6..7, 7, status_text)
 		end
 		puts
@@ -252,7 +252,7 @@ private
 		if !File.exist?("#{@support_dir}/Rakefile")
 			yield(0, 1, 1, "Preparing Phusion Passenger...")
 			FileUtils.rm_rf(@support_dir)
-			Dir.chdir(SOURCE_ROOT) do
+			Dir.chdir(@source_root) do
 				files = `#{rake} package:filelist --silent`.split("\n")
 				copy_files(files, @support_dir) do |progress, total|
 					yield(progress, total, 1, "Copying files...")
@@ -274,7 +274,7 @@ private
 			command = "sh ./configure '--prefix=#{@nginx_dir}' --without-pcre " <<
 				"--without-http_rewrite_module " <<
 				"--without-http_fastcgi_module " <<
-				"'--add-module=#{@support_dir}/ext/nginx'"
+				"'--add-module=#{@source_root}/ext/nginx'"
 			run_command_with_throbber(command, "Preparing Nginx...") do |status_text|
 				yield(0, 1, status_text)
 			end
