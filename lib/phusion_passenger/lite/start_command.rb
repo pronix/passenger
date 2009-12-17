@@ -339,6 +339,18 @@ private
 				end
 			end
 		end
+		
+		@apps.map! do |app|
+			config_filename = File.join(app[:root], "passenger.conf")
+			if File.exist?(config_filename)
+				options = load_config_file(:local_config, config_filename)
+				options = @options.merge(options)
+				options.merge!(app)
+				options
+			else
+				@options.merge(app)
+			end
+		end
 	end
 	
 	def daemonize

@@ -20,7 +20,6 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-require 'optparse'
 require 'phusion_passenger/lite/command'
 
 module PhusionPassenger
@@ -59,11 +58,19 @@ class App
 		elsif command_exists?(command)
 			begin
 				run_command(command, argv[1..-1])
-			rescue OptionParser::ParseError => e
-				puts e
-				puts
-				puts "Please see '--help' for valid options."
-				exit 1
+			rescue => e
+				if defined?(OptionParser::ParseError) && e.is_a?(OptionParser::ParseError)
+					puts e
+					puts
+					puts "Please see '--help' for valid options."
+					exit 1
+				elsif defined?(ConfigFile::DisallowedContextError) && e.is_a?(ConfigFile::DisallowedContextError)
+					puts "*** Error in #{e.filename} line #{e.line}:"
+					puts e
+					exit 1
+				else
+					raise
+				end
 			end
 		else
 			STDERR.puts "Unknown command '#{command}'. Please type --help for options."

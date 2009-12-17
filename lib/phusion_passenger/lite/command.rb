@@ -77,12 +77,28 @@ private
 		require 'erb' unless defined?(ERB)
 	end
 	
+	def require_optparse
+		require 'optparse' unless defined?(OptionParser)
+	end
+	
 	def debugging?
 		return ENV['PASSENGER_DEBUG']
 	end
 	
+	def load_config_file(context, filename)
+		require 'phusion_passenger/lite/config_file'
+		return ConfigFile.new(context, filename).options
+	end
+	
 	def parse_options!(command_name, description = nil)
 		help = false
+		
+		global_config_file = File.join(ENV['HOME'], ".passenger-lite", "config")
+		if File.exist?(global_config_file)
+			@options.merge!(load_config_file(:global_config, global_config_file))
+		end
+		
+		require_optparse
 		parser = OptionParser.new do |opts|
 			opts.banner = "Usage: passenger #{command_name} [options]"
 			opts.separator description if description
