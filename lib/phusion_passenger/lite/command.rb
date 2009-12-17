@@ -31,6 +31,8 @@ class Command
 		:address       => '0.0.0.0',
 		:port          => 3000,
 		:env           => ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development',
+		:max_pool_size => 6,
+		:min_instances => 1,
 		:nginx_version => '0.7.64'
 	}.freeze
 	

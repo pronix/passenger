@@ -64,6 +64,14 @@ class StartCommand < Command
 				wrap_desc("Framework environment (default: #{@options[:env]})")) do |value|
 				@options[:port] = value
 			end
+			opts.on("--max-pool-size NUMBER", Integer,
+				wrap_desc("Maximum number of application processes (default: #{@options[:max_pool_size]})")) do |value|
+				@options[:max_pool_size] = value
+			end
+			opts.on("--min-instances NUMBER", Integer,
+				wrap_desc("Minimum number of processes per application (default: #{@options[:min_instances]})")) do |value|
+				@options[:min_instances] = value
+			end
 			opts.on("-d", "--daemonize",
 				wrap_desc("Daemonize into the background")) do
 				@options[:daemonize] = true
