@@ -56,7 +56,7 @@ class StopCommand < Command
 				"Phusion Passenger Lite doesn't seem to be running."
 			STDERR.puts
 			STDERR.puts "If you know that Phusion Passenger Lite *is* running then one of these might be"
-			STDERR.puts "the reason:"
+			STDERR.puts "the cause of this error:"
 			STDERR.puts
 			STDERR.puts " * The Phusion Passenger Lite instance that you want to stop isn't running on"
 			STDERR.puts "   port #{@options[:port]}, but on another port. If this is the case then you should"
