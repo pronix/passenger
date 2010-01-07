@@ -79,6 +79,11 @@ class ConfigFile
 		allowed_contexts(:daemonize, :global_config)
 		@options[:daemonize] = on
 	end
+	
+	def nginx_bin(filename)
+		allowed_contexts(:nginx_bin, :global_config)
+		@options[:nginx_bin] = filename
+	end
 
 private
 	def allowed_contexts(option_name, *contexts)

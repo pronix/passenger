@@ -92,6 +92,10 @@ class StartCommand < Command
 				wrap_desc("Where to store the PID file")) do |value|
 				@options[:pid_file] = value
 			end
+			opts.on("--nginx-bin FILENAME", String,
+				wrap_desc("Nginx binary to use as core")) do |value|
+				@options[:nginx_bin] = value
+			end
 			opts.on("--nginx-version VERSION", String,
 				wrap_desc("Nginx version to use as core (default: #{@options[:nginx_version]})")) do |value|
 				@options[:nginx_version] = value
@@ -265,6 +269,11 @@ private
 	end
 	
 	def ensure_nginx_installed
+		if @options[:nginx_bin] && !File.exist?(@options[:nginx_bin])
+			STDERR.puts "The given Nginx binary '#{@options[:nginx_bin]}' does not exist."
+			exit 1
+		end
+		
 		home           = Etc.getpwuid.dir
 		@runtime_dir   = "/var/lib/passenger-lite/#{runtime_version_string}"
 		if !File.exist?("#{nginx_dir}/sbin/nginx")

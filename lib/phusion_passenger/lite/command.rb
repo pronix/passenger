@@ -178,7 +178,12 @@ private
 	end
 	
 	def determine_nginx_start_command
-		return "#{nginx_dir}/sbin/nginx -c '#{@config_filename}'"
+		if @options[:nginx_bin]
+			nginx_bin = @options[:nginx_bin]
+		else
+			nginx_bin = "#{nginx_dir}/sbin/nginx"
+		end
+		return "#{nginx_bin} -c '#{@config_filename}'"
 	end
 	
 	def ping_nginx
