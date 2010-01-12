@@ -57,9 +57,13 @@ private
 				require 'daemon_controller'
 				begin
 					require 'daemon_controller/version'
+					too_old = DaemonController::VERSION_STRING < '0.2.5'
 				rescue LoadError
+					too_old = true
+				end
+				if too_old
 					STDERR.puts "*** Your version of daemon_controller is too old. " <<
-						"You must install 0.2.3 or later. Please upgrade:"
+						"You must install 0.2.4 or later. Please upgrade:"
 					STDERR.puts
 					STDERR.puts " sudo gem uninstall FooBarWidget-daemon_controller"
 					STDERR.puts " sudo gem install daemon_controller"
@@ -186,19 +190,31 @@ private
 		return "#{nginx_bin} -c '#{@config_filename}'"
 	end
 	
+	# Returns the port on which to ping Nginx.
+	def nginx_ping_port
+		if @options[:from_launchd]
+			# Launchd owns the server socket so we cannot use the
+			# usual port to ping Nginx. Instead we ping the seperate
+			# ping port.
+			return @options[:port] + 1
+		else
+			return @options[:port]
+		end
+	end
+	
 	def ping_nginx
 		require 'socket' unless defined?(UNIXSocket)
 		if @options[:socket_file]
 			UNIXSocket.new(@options[:socket_file])
 		else
-			TCPSocket.new(@options[:address], @options[:port])
+			TCPSocket.new(@options[:address], nginx_ping_port)
 		end
 	end
 	
-	def create_nginx_controller
+	def create_nginx_controller(extra_options = {})
 		require_daemon_controller
 		@config_filename = "/tmp/passenger-lite.#{$$}.conf"
-		@nginx = DaemonController.new(
+		opts = {
 			:identifier    => 'Nginx',
 			:before_start  => method(:create_nginx_config_file),
 			:start_command => method(:determine_nginx_start_command),
@@ -206,7 +222,8 @@ private
 			:pid_file      => @options[:pid_file],
 			:log_file      => @options[:log_file],
 			:timeout       => 25
-		)
+		}
+		@nginx = DaemonController.new(opts.merge(extra_options))
 		@nginx_mutex = Mutex.new
 	end
 end

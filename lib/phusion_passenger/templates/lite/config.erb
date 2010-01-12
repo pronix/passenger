@@ -32,6 +32,14 @@ http {
         root <%= LIBDIR %>/phusion_passenger/templates/lite_default_root;
     }
     <% end %>
+
+    <% if @options[:from_launchd] %>
+    # See ping_nginx
+    server {
+        listen <%= nginx_listen_address(:ping) %>;
+        root <%= LIBDIR %>/phusion_passenger/templates/lite_default_root;
+    }
+    <% end %>
     
     <% for app in @apps %>
     server {

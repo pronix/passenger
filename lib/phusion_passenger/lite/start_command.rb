@@ -76,6 +76,10 @@ class StartCommand < Command
 			end
 			
 			opts.separator ""
+			opts.on("--from-launchd", String,
+				wrap_desc("For internal use. Do not specify this argument.")) do
+				@options[:from_launchd] = true
+			end
 			opts.on("-d", "--daemonize",
 				wrap_desc("Daemonize into the background")) do
 				@options[:daemonize] = true
@@ -117,7 +121,9 @@ class StartCommand < Command
 		determine_various_resource_locations
 		determine_apps_to_serve
 		
-		create_nginx_controller
+		controller_options = {}
+		pass_launchd_socket_to_nginx(controller_options) if @options[:from_launchd]
+		create_nginx_controller(controller_options)
 		begin
 			@nginx.start
 		rescue DaemonController::AlreadyStarted
@@ -170,7 +176,7 @@ class StartCommand < Command
 		daemonize if @options[:daemonize]
 		Thread.abort_on_exception = true
 		watch_directories_in_background if @apps.size > 1
-		watch_log_files_in_background if !@options[:daemonize]
+		watch_log_files_in_background if !@options[:daemonize] && !@options[:from_launchd]
 		begin
 			wait_until_nginx_has_exited
 		rescue Interrupt
@@ -379,6 +385,24 @@ private
 		end
 	end
 	
+	def pass_launchd_socket_to_nginx(controller_options)
+		require 'phusion_passenger/utils'
+		fd = NativeSupport.get_socket_from_launchd("ServerSocket")
+		if fd.nil?
+			raise "No server socket received from launchd."
+		else
+			# fd is a TCP/IP server socket. To pass this to Nginx,
+			# we abuse Nginx's on-the-fly-binary-switching mechanism.
+			server = TCPServer.for_fd(fd)
+			ENV["NGINX"] = "#{fd};"
+			controller_options[:keep_ios] = [server]
+			
+			# When in binary switching mode Nginx doesn't daemonize,
+			# so let daemon_controller do it.
+			controller_options[:daemonize_for_me] = true
+		end
+	end
+	
 	# Wait until the termination pipe has closed (a hint for threads to shut down),
 	# or until the timeout has been reached. Returns true if the termination pipe
 	# is closed, false if the timeout has been reached.
@@ -499,7 +523,7 @@ private
 			if @options[:socket_file]
 				socket = UNIXSocket.new(@options[:socket_file])
 			else
-				socket = TCPSocket.new(@options[:address], @options[:port])
+				socket = TCPSocket.new(@options[:address], nginx_ping_port)
 			end
 			begin
 				socket.read rescue nil
@@ -533,11 +557,16 @@ private
 	
 	#### Config file template helpers ####
 	
-	def nginx_listen_address
+	def nginx_listen_address(is_ping = false)
 		if @options[:socket_file]
 			return "unix:" + File.expand_path(@options[:socket_file])
 		else
-			return "#{@options[:address]}:#{@options[:port]}"
+			if is_ping
+				port = nginx_ping_port
+			else
+				port = @options[:port]
+			end
+			return "#{@options[:address]}:#{port}"
 		end
 	end
 	

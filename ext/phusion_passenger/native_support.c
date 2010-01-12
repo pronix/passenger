@@ -38,6 +38,10 @@
 #ifdef HAVE_ALLOCA_H
 	#include <alloca.h>
 #endif
+#include <fcntl.h>
+#ifdef __APPLE__
+	#include <launch.h>
+#endif
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #ifndef RARRAY_LEN
@@ -569,6 +573,61 @@ switch_user(VALUE self, VALUE username, VALUE uid, VALUE gid) {
 	return Qnil;
 }
 
+#ifdef __APPLE__
+static VALUE
+get_socket_from_launchd(VALUE self, VALUE socket_name) {
+	launch_data_t checkin_request = launch_data_new_string(LAUNCH_KEY_CHECKIN);
+	if (checkin_request == NULL) {
+		rb_raise(rb_eRuntimeError, "Cannot create a launchd checkin request object.");
+		return Qnil;
+	}
+	
+	launch_data_t response = launch_msg(checkin_request);
+	if (response == NULL) {
+		return Qnil;
+	}
+	
+	if (launch_data_get_type(response) == LAUNCH_DATA_ERRNO) {
+		errno = launch_data_get_errno(response);
+		rb_sysfail("launch_data_get_type()");
+		return Qnil;
+	}
+	
+	launch_data_t sockets_dict = launch_data_dict_lookup(response, LAUNCH_JOBKEY_SOCKETS);
+	if (sockets_dict == NULL) {
+		rb_raise(rb_eRuntimeError, "Cannot lookup the sockets job key in the launchd checkin response.");
+		return Qnil;
+	}
+	
+	launch_data_t fds_data = launch_data_dict_lookup(sockets_dict, RSTRING_PTR(socket_name));
+	if (fds_data == NULL) {
+		rb_raise(rb_eRuntimeError, "There's no socket with the given name in the launchd checkin response.");
+		return Qnil;
+	}
+	
+	launch_data_t fd_data = launch_data_array_get_index(fds_data, 0);
+	if (fd_data == NULL) {
+		rb_raise(rb_eRuntimeError, "Cannot retrieve socket 0 from the launchd checkin response.");
+		return Qnil;
+	}
+	
+	int fd = launch_data_get_fd(fd_data);
+	int flags = fcntl(fd, F_GETFD);
+	if (flags == -1) {
+		rb_sys_fail("fcntl()");
+		return Qnil;
+	}
+	/* Remove close-on-exec flag. */
+	#ifdef FD_CLOEXEC
+		fcntl(fd, F_SETFD, flags & ~FD_CLOEXEC);
+	#else
+		fcntl(fd, F_SETFD, flags & ~1);
+	#endif
+	
+	return INT2NUM(fd);
+}
+#endif /* __APPLE__ */
+
 
 /***************************/
 
@@ -595,6 +654,10 @@ Init_native_support() {
 	rb_define_singleton_method(mNativeSupport, "writev2", f_writev2, 3);
 	rb_define_singleton_method(mNativeSupport, "writev3", f_writev3, 4);
 	rb_define_singleton_method(mNativeSupport, "switch_user", switch_user, 3);
+	#ifdef __APPLE__
+		rb_define_singleton_method(mNativeSupport, "get_socket_from_launchd",
+			get_socket_from_launchd, 1);
+	#endif /* __APPLE__ */
 	
 	/* The maximum length of a Unix socket path, including terminating null. */
 	rb_define_const(mNativeSupport, "UNIX_PATH_MAX", INT2NUM(sizeof(addr.sun_path)));
