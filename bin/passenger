@@ -28,4 +28,8 @@ $LOAD_PATH.unshift("#{source_root}/lib")
 require 'rubygems' rescue nil
 require 'phusion_passenger/lite/app'
 
+require 'phusion_passenger/utils'
+STDOUT.sync = STDERR.sync = true
+PhusionPassenger::NativeSupport.disable_stdio_buffering
+
 PhusionPassenger::Lite::App.run!(ARGV)
