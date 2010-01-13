@@ -69,7 +69,7 @@ class App
 					puts e
 					exit 1
 				else
-					raise
+					raise e
 				end
 			end
 		else
