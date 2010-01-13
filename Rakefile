@@ -70,7 +70,7 @@ task :default => [
 	:native_support,
 	:apache2,
 	:nginx,
-	:osx_dock_icon,
+	'macosx:dock_icon',
 	'test/oxt/oxt_test_main',
 	'test/CxxTests'
 ]
@@ -108,12 +108,12 @@ end
 
 ##### Phusion Passenger Lite OS X application
 desc "Build Phusion Passenger Lite OS X application"
-task :osx_dock_icon do
-  sh "cd ext/macosx/DockIcon/ && xcodebuild -configuration Release" if RUBY_PLATFORM =~ /darwin/
+task 'macosx:dock_icon' do
+	sh "cd ext/macosx/DockIcon && xcodebuild -configuration Debug" if RUBY_PLATFORM =~ /darwin/
 end
 
 task 'macosx:clean' do
-  sh "cd ext/macosx/DockIcon && xcodebuild clean" if RUBY_PLATFORM =~ /darwin/
+	sh "cd ext/macosx/DockIcon && xcodebuild clean" if RUBY_PLATFORM =~ /darwin/
 end
 
 task :clean => 'macosx:clean'

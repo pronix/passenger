@@ -42,5 +42,10 @@ module PhusionPassenger
 		
 		# Documentation directory.
 		DOCDIR      = File.expand_path(File.join(SOURCE_ROOT, "doc"))
+		
+		# MacOS X dock icon application directory.
+		MACOSX_DOCK_ICON_APP_DIR = File.expand_path(File.join(SOURCE_ROOT,
+			"ext", "macosx", "DockIcon", "build", "Debug",
+			"Phusion Passenger Lite.app"))
 	end
 end

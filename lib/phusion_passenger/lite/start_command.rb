@@ -76,9 +76,13 @@ class StartCommand < Command
 			end
 			
 			opts.separator ""
-			opts.on("--from-launchd", String,
+			opts.on("--from-launchd",
 				wrap_desc("For internal use. Do not specify this argument.")) do
 				@options[:from_launchd] = true
+			end
+			opts.on("--show-dock-icon",
+				wrap_desc("Show a MacOS X dock icon.")) do
+				@options[:show_dock_icon] = true
 			end
 			opts.on("-d", "--daemonize",
 				wrap_desc("Daemonize into the background")) do
@@ -122,7 +126,8 @@ class StartCommand < Command
 		determine_apps_to_serve
 		
 		controller_options = {}
-		pass_launchd_socket_to_nginx(controller_options) if @options[:from_launchd]
+		dock_icon = show_dock_icon if @options[:show_dock_icon]
+		process_socket_from_launchd(controller_options) if @options[:from_launchd]
 		create_nginx_controller(controller_options)
 		begin
 			@nginx.start
@@ -194,6 +199,8 @@ class StartCommand < Command
 			raise
 		end
 		stop_threads
+	ensure
+		dock_icon.close if dock_icon
 	end
 
 private
@@ -385,7 +392,12 @@ private
 		end
 	end
 	
-	def pass_launchd_socket_to_nginx(controller_options)
+	def show_dock_icon
+		exe = "#{MACOSX_DOCK_ICON_APP_DIR}/Contents/MacOS/Phusion Passenger Lite"
+		return IO.popen("\"#{exe}\" #{@termination_pipe[0].fileno} #{$$}", "r")
+	end
+	
+	def process_socket_from_launchd(controller_options)
 		require 'phusion_passenger/utils'
 		fd = NativeSupport.get_socket_from_launchd("ServerSocket")
 		if fd.nil?
@@ -403,7 +415,7 @@ private
 		end
 	end
 	
-	# Wait until the termination pipe has closed (a hint for threads to shut down),
+	# Wait until the termination pipe becomes readable (a hint for threads to shut down),
 	# or until the timeout has been reached. Returns true if the termination pipe
 	# is closed, false if the timeout has been reached.
 	def wait_on_termination_pipe(timeout)
@@ -546,6 +558,7 @@ private
 	end
 	
 	def stop_threads
+		@termination_pipe[1].write("x")
 		@termination_pipe[1].close
 		@interruptable_threads.each do |thread|
 			thread.terminate
