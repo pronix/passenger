@@ -1,6 +1,6 @@
 //
-//  Phusion_Passenger_LiteAppDelegate.h
-//  Phusion Passenger Lite
+//  Phusion_Passenger_AppDelegate.h
+//  Phusion Passenger OS X integration
 //
 //  Created by Ninh Bui on 1/12/10.
 //  Copyright 2010 Phusion v.o.f.. All rights reserved.
@@ -14,7 +14,7 @@ enum {
 	PhusionPassengerLitePID = 2
 };
 
-@interface Phusion_Passenger_LiteAppDelegate : NSObject <NSApplicationDelegate> {
+@interface Phusion_Passenger_AppDelegate : NSObject <NSApplicationDelegate> {
 	// The thread object responsible for exiting the application. When the user
 	// provided fd becomes readable, it will terminate the application.
 	NSThread *exitThread;

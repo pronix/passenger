@@ -393,7 +393,7 @@ private
 	end
 	
 	def show_dock_icon
-		exe = "#{MACOSX_DOCK_ICON_APP_DIR}/Contents/MacOS/Phusion Passenger Lite"
+		exe = "#{MACOSX_DOCK_ICON_APP_DIR}/Contents/MacOS/Phusion Passenger"
 		return IO.popen("\"#{exe}\" #{@termination_pipe[0].fileno} #{$$}", "r")
 	end
 	

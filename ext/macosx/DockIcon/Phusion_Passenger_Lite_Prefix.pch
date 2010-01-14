@@ -1,5 +1,5 @@
 //
-// Prefix header for all source files of the 'Phusion Passenger Lite' target in the 'Phusion Passenger Lite' project
+// Prefix header for all source files of the 'Phusion Passenger' target in the 'Phusion Passenger' project
 //
 
 #ifdef __OBJC__
