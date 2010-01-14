@@ -105,6 +105,11 @@ task 'native_support:clean' do
 	sh "rm -f ext/phusion_passenger/Makefile"
 end
 
+##### Phusion Passenger Lite OS X application
+desc "Build Phusion Passenger Lite OS X application"
+task :phusion_passenger_lite_osx do
+  sh "cd ext/macosx/PhusionPassengerLite/ && xcodebuild"
+end
 
 ##### Boost and OXT static library
 
