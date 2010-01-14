@@ -9,11 +9,13 @@
 	<key>CFBundleIconFile</key>
 	<string>PhusionPassenger</string>
 	<key>CFBundleIdentifier</key>
-	<string>nl.phusion.${PRODUCT_NAME:rfc1034identifier}</string>
+	<string>nl.phusion.passenger.dock-icon</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>${PRODUCT_NAME}</string>
+	<string>Phusion Passenger</string>
+	<key>CFBundleDisplayName</key>
+	<string>Phusion Passenger</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>

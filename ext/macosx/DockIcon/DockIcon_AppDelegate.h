@@ -1,5 +1,5 @@
 //
-//  Phusion_Passenger_AppDelegate.h
+//  DockIcon_AppDelegate.h
 //  Phusion Passenger OS X integration
 //
 //  Created by Ninh Bui on 1/12/10.
@@ -14,7 +14,7 @@ enum {
 	PhusionPassengerLitePID = 2
 };
 
-@interface Phusion_Passenger_AppDelegate : NSObject <NSApplicationDelegate> {
+@interface DockIcon_AppDelegate : NSObject <NSApplicationDelegate> {
 	// The thread object responsible for exiting the application. When the user
 	// provided fd becomes readable, it will terminate the application.
 	NSThread *exitThread;

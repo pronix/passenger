@@ -40,7 +40,7 @@ static AboutWindowController *sharedInstance = nil;
 			NSWindow *aboutWindow = [sharedInstance window];
 			
 			NSImage *aboutBackgroundImage =
-				[NSImage imageNamed:@"phusion_passenger_about"];
+				[NSImage imageNamed:@"about_backgound"];
 			
 			NSColor *aboutBackgroundColor =
 				[NSColor colorWithPatternImage:aboutBackgroundImage];

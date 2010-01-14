@@ -1,19 +1,19 @@
 //
-//  Phusion_Passenger_AppDelegate.m
+//  DockIcon_AppDelegate.m
 //  Phusion Passenger OS X integration
 //
 //  Created by Ninh Bui on 1/12/10.
 //  Copyright 2010 Phusion v.o.f.. All rights reserved.
 //
 
-#import "Phusion_Passenger_AppDelegate.h"
+#import "DockIcon_AppDelegate.h"
 
 #include <crt_externs.h>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <signal.h>
 
-@implementation Phusion_Passenger_AppDelegate
+@implementation DockIcon_AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
 	// Initialize about window controller singleton
