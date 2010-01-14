@@ -107,8 +107,8 @@ end
 
 ##### Phusion Passenger Lite OS X application
 desc "Build Phusion Passenger Lite OS X application"
-task :phusion_passenger_lite_osx do
-  sh "cd ext/macosx/PhusionPassengerLite/ && xcodebuild"
+task :osx_dock_icon do
+  sh "cd ext/macosx/DockIcon/ && xcodebuild"
 end
 
 ##### Boost and OXT static library
