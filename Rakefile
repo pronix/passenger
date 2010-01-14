@@ -108,7 +108,7 @@ end
 ##### Phusion Passenger Lite OS X application
 desc "Build Phusion Passenger Lite OS X application"
 task :osx_dock_icon do
-  sh "cd ext/macosx/DockIcon/ && xcodebuild"
+  sh "cd ext/macosx/DockIcon/ && xcodebuild" if RUBY_PLATFORM =~ /darwin/
 end
 
 ##### Boost and OXT static library
