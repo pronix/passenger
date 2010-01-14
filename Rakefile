@@ -70,6 +70,7 @@ task :default => [
 	:native_support,
 	:apache2,
 	:nginx,
+	:osx_dock_icon,
 	'test/oxt/oxt_test_main',
 	'test/CxxTests'
 ]
