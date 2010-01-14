@@ -111,6 +111,12 @@ task :osx_dock_icon do
   sh "cd ext/macosx/DockIcon/ && xcodebuild -configuration Release" if RUBY_PLATFORM =~ /darwin/
 end
 
+task 'macosx:clean' do
+  sh "cd ext/macosx/DockIcon && xcodebuild clean" if RUBY_PLATFORM =~ /darwin/
+end
+
+task :clean => 'macosx:clean'
+
 ##### Boost and OXT static library
 
 def define_libboost_oxt_task(namespace, output_dir, extra_compiler_flags = nil)
