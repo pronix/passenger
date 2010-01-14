@@ -10,6 +10,8 @@ scgi_demo
 *.pyc
 *.a
 *.dSYM
+*.pbxuser
+*.perspectivev3
 ext/apache2/*.la
 ext/apache2/*.lo
 ext/apache2/*.slo
