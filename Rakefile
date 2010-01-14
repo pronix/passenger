@@ -877,6 +877,7 @@ spec = Gem::Specification.new do |s|
 		'ext/oxt/*.hpp',
 		'ext/oxt/*.cpp',
 		'ext/oxt/detail/*.hpp',
+		'ext/macosx/**/*.{xib,h,m,plist,pch,icns,png,strings,pbxproj}',
 		'ext/phusion_passenger/*.{c,rb}',
 		'benchmark/*.{cpp,rb}',
 		'misc/*',
