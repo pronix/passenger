@@ -7,7 +7,7 @@
 //
 
 #import "AboutWindowController.h"
-
+#import "common/Version.h"
 
 @implementation AboutWindowController
 
@@ -49,8 +49,7 @@ static AboutWindowController *sharedInstance = nil;
 			
 			[aboutWindow setBackgroundColor:aboutBackgroundColor];
 			
-			// TODO: hook up with ext/common/Version.h
-			[[sharedInstance versionLabel] setStringValue:@"Version 1.0"];
+			[[sharedInstance versionLabel] setStringValue:@PASSENGER_VERSION];
 		}
 	}
 	
