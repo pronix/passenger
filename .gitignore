@@ -21,6 +21,7 @@ ext/common/PassengerLoggingAgent
 ext/phusion_passenger/Makefile
 ext/phusion_passenger/mkmf.log
 ext/*.a
+ext/macosx/Phusion Passenger Lite/build
 doc/rdoc
 doc/cxxapi
 doc/*.html

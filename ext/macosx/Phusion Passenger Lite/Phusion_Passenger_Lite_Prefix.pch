@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'Phusion Passenger Lite' target in the 'Phusion Passenger Lite' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
