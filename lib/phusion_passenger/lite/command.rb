@@ -85,6 +85,10 @@ private
 		require 'optparse' unless defined?(OptionParser)
 	end
 	
+	def require_platform_info
+		require 'platform_info' unless defined?(PlatformInfo)
+	end
+	
 	def debugging?
 		return ENV['PASSENGER_DEBUG']
 	end

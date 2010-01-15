@@ -265,12 +265,8 @@ private
 	end
 	
 	def runtime_version_string
-		if defined?(RUBY_ENGINE)
-			ruby_engine = RUBY_ENGINE
-		else
-			ruby_engine = "ruby"
-		end
-		return "#{VERSION_STRING}-#{ruby_engine}#{RUBY_VERSION}-#{RUBY_PLATFORM}"
+		require_platform_info
+		return "#{VERSION_STRING}-#{PlatformInfo.passenger_binary_compatibility_identifier}"
 	end
 	
 	def passenger_support_files_dir
