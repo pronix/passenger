@@ -96,6 +96,8 @@ protected
 				headers.each do |key, values|
 					if values.is_a?(String)
 						values = values.split("\n")
+          elsif values.is_a?(Fixnum)
+                  values = values.to_a
 					end
 					values.each do |value|
 						output.write("#{key}: #{value}#{CRLF}")
